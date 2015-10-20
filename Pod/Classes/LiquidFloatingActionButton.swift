@@ -67,6 +67,7 @@ public class LiquidFloatingActionButton : UIView {
 
     private let plusLayer   = CAShapeLayer()
     private let circleLayer = CAShapeLayer()
+    private let borderLayer = CAShapeLayer()
 
     private var touching = false
     private var plusRotation: CGFloat = 0
@@ -138,6 +139,16 @@ public class LiquidFloatingActionButton : UIView {
         self.circleLayer.frame = CGRect(origin: CGPointZero, size: self.frame.size)
         self.circleLayer.cornerRadius = self.frame.width * 0.5
         self.circleLayer.masksToBounds = true
+        self.circleLayer.borderWidth = 2
+        self.circleLayer.borderColor = UIColor.whiteColor().CGColor
+
+        self.borderLayer.frame = CGRect(x: 2, y: 2, width: self.frame.size.width-4, height: self.frame.size.width-4)
+        self.borderLayer.cornerRadius = (self.frame.width-2) * 0.5
+        self.borderLayer.masksToBounds = true
+        self.borderLayer.borderWidth = 2
+        self.borderLayer.borderColor = UIColor.redColor().CGColor
+        self.borderLayer.backgroundColor = UIColor.whiteColor().CGColor
+
         if touching && responsible {
             self.circleLayer.backgroundColor = self.color.white(0.5).CGColor
         } else {
@@ -148,8 +159,8 @@ public class LiquidFloatingActionButton : UIView {
     private func drawPlus(rotation: CGFloat) {
         plusLayer.frame = CGRect(origin: CGPointZero, size: self.frame.size)
         plusLayer.lineCap = kCALineCapRound
-        plusLayer.strokeColor = UIColor.whiteColor().CGColor // TODO: customizable
-        plusLayer.lineWidth = 3.0
+        plusLayer.strokeColor = UIColor.blackColor().CGColor // TODO: customizable
+        plusLayer.lineWidth = 2.0
 
         plusLayer.path = pathPlus(rotation).CGPath
     }
@@ -242,6 +253,7 @@ public class LiquidFloatingActionButton : UIView {
         addSubview(liquidView)
 
         liquidView.layer.addSublayer(circleLayer)
+        circleLayer.addSublayer(borderLayer)
         circleLayer.addSublayer(plusLayer)
     }
 
