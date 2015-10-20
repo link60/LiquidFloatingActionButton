@@ -31,7 +31,7 @@ public enum LiquidFloatingActionButtonAnimateStyle : Int {
 public class LiquidFloatingActionButton : UIView {
 
     private let internalRadiusRatio: CGFloat = 20.0 / 56.0
-    public var cellRadiusRatio: CGFloat      = 0.38
+    public var cellRadiusRatio: CGFloat      = 0.5
     public var animateStyle: LiquidFloatingActionButtonAnimateStyle = .Up {
         didSet {
             baseView.animateStyle = animateStyle
@@ -42,7 +42,7 @@ public class LiquidFloatingActionButton : UIView {
             setNeedsDisplay()
         }
     }
-    
+
     public var delegate:   LiquidFloatingActionButtonDelegate?
     public var dataSource: LiquidFloatingActionButtonDataSource?
 
@@ -90,7 +90,7 @@ public class LiquidFloatingActionButton : UIView {
         cell.actionButton = self
         insertSubview(cell, aboveSubview: baseView)
     }
-    
+
     private func cellArray() -> [LiquidFloatingCell] {
         var result: [LiquidFloatingCell] = []
         if let source = dataSource {
@@ -121,7 +121,7 @@ public class LiquidFloatingActionButton : UIView {
         // rotate plus icon
         self.plusLayer.addAnimation(plusKeyframe(false), forKey: "plusRot")
         self.plusRotation = 0
-    
+
         self.baseView.close(cellArray())
         setNeedsDisplay()
     }
@@ -132,7 +132,7 @@ public class LiquidFloatingActionButton : UIView {
         drawShadow()
         drawPlus(plusRotation)
     }
-    
+
     private func drawCircle() {
         self.circleLayer.frame = CGRect(origin: CGPointZero, size: self.frame.size)
         self.circleLayer.cornerRadius = self.frame.width * 0.5
@@ -143,7 +143,7 @@ public class LiquidFloatingActionButton : UIView {
             self.circleLayer.backgroundColor = self.color.CGColor
         }
     }
-    
+
     private func drawPlus(rotation: CGFloat) {
         plusLayer.frame = CGRect(origin: CGPointZero, size: self.frame.size)
         plusLayer.lineCap = kCALineCapRound
@@ -152,13 +152,13 @@ public class LiquidFloatingActionButton : UIView {
 
         plusLayer.path = pathPlus(rotation).CGPath
     }
-    
+
     private func drawShadow() {
         if enableShadow {
             circleLayer.appendShadow()
         }
     }
-    
+
     // draw button plus or close face
     private func pathPlus(rotation: CGFloat) -> UIBezierPath {
         let radius = self.frame.width * internalRadiusRatio * 0.5
@@ -176,7 +176,7 @@ public class LiquidFloatingActionButton : UIView {
         path.addLineToPoint(points[3])
         return path
     }
-    
+
     private func plusKeyframe(closed: Bool) -> CAKeyframeAnimation {
         let paths = closed ? [
                 pathPlus(CGFloat(M_PI * 0)),
@@ -202,32 +202,32 @@ public class LiquidFloatingActionButton : UIView {
         self.touching = true
         setNeedsDisplay()
     }
-    
+
     public override func touchesEnded(touches: Set<UITouch>, withEvent event: UIEvent?) {
         self.touching = false
         setNeedsDisplay()
         didTapped()
     }
-    
+
     public override func touchesCancelled(touches: Set<UITouch>?, withEvent event: UIEvent?) {
         self.touching = false
         setNeedsDisplay()
     }
-    
+
     public override func hitTest(point: CGPoint, withEvent event: UIEvent?) -> UIView? {
         for cell in cellArray() {
             let pointForTargetView = cell.convertPoint(point, fromView: self)
-            
+
             if (CGRectContainsPoint(cell.bounds, pointForTargetView)) {
                 if cell.userInteractionEnabled {
                     return cell.hitTest(pointForTargetView, withEvent: event)
                 }
             }
         }
-        
+
         return super.hitTest(point, withEvent: event)
     }
-    
+
     // MARK: private methods
     private func setup() {
         self.backgroundColor = UIColor.clearColor()
@@ -235,11 +235,11 @@ public class LiquidFloatingActionButton : UIView {
 
         baseView.setup(self)
         addSubview(baseView)
-        
+
         liquidView.frame = baseView.frame
         liquidView.userInteractionEnabled = false
         addSubview(liquidView)
-        
+
         liquidView.layer.addSublayer(circleLayer)
         circleLayer.addSublayer(plusLayer)
     }
@@ -251,7 +251,7 @@ public class LiquidFloatingActionButton : UIView {
             close()
         }
     }
-    
+
     public func didTappedCell(target: LiquidFloatingCell) {
         if let _ = dataSource {
             let cells = cellArray()
@@ -270,7 +270,7 @@ class ActionBarBaseView : UIView {
     var opening = false
     func setup(actionButton: LiquidFloatingActionButton) {
     }
-    
+
     func translateY(layer: CALayer, duration: CFTimeInterval, f: (CABasicAnimation) -> ()) {
         let translate = CABasicAnimation(keyPath: "transform.translation.y")
         f(translate)
@@ -319,7 +319,7 @@ class CircleLiquidBaseView : ActionBarBaseView {
         baseLiquid = LiquittableCircle(center: self.center.minus(self.frame.origin), radius: radius, color: actionButton.color)
         baseLiquid?.clipsToBounds = false
         baseLiquid?.layer.masksToBounds = false
-        
+
         clipsToBounds = false
         layer.masksToBounds = false
         addSubview(baseLiquid!)
@@ -336,7 +336,7 @@ class CircleLiquidBaseView : ActionBarBaseView {
             openingCells.append(cell)
         }
     }
-    
+
     func close(cells: [LiquidFloatingCell]) {
         stop()
         opening = false
@@ -397,7 +397,7 @@ class CircleLiquidBaseView : ActionBarBaseView {
         engine?.draw(baseLiquid!)
         bigEngine?.draw(baseLiquid!)
     }
-    
+
     func updateOpen() {
         update(0.1, duration: openDuration) { cell, i, ratio in
             let posRatio = ratio > CGFloat(i) / CGFloat(self.openingCells.count) ? ratio : 0
@@ -406,7 +406,7 @@ class CircleLiquidBaseView : ActionBarBaseView {
             cell.update(ratio, open: true)
         }
     }
-    
+
     func updateClose() {
         update(0, duration: closeDuration) { cell, i, ratio in
             let distance = (cell.frame.height * 0.5 + CGFloat(i + 1) * cell.frame.height * 1.5) * (1 - ratio)
@@ -414,7 +414,7 @@ class CircleLiquidBaseView : ActionBarBaseView {
             cell.update(ratio, open: false)
         }
     }
-    
+
     func differencePoint(distance: CGFloat) -> CGPoint {
         switch animateStyle {
         case .Up:
@@ -427,7 +427,7 @@ class CircleLiquidBaseView : ActionBarBaseView {
             return CGPoint(x: 0, y: distance)
         }
     }
-    
+
     func stop() {
         for cell in openingCells {
             if enableShadow {
@@ -438,7 +438,7 @@ class CircleLiquidBaseView : ActionBarBaseView {
         keyDuration = 0
         displayLink?.invalidate()
     }
-    
+
     func easeInEaseOut(t: CGFloat) -> CGFloat {
         if t >= 1.0 {
             return 1.0
@@ -448,7 +448,7 @@ class CircleLiquidBaseView : ActionBarBaseView {
         }
         return -1 * t * (t - 2)
     }
-    
+
     func didDisplayRefresh(displayLink: CADisplayLink) {
         if opening {
             keyDuration += CGFloat(displayLink.duration)
@@ -462,8 +462,6 @@ class CircleLiquidBaseView : ActionBarBaseView {
 }
 
 public class LiquidFloatingCell : LiquittableCircle {
-    
-    let internalRatio: CGFloat = 0.75
 
     public var responsible = true
     public var imageView = UIImageView()
@@ -471,7 +469,7 @@ public class LiquidFloatingCell : LiquittableCircle {
 
     // for implement responsible color
     private var originalColor: UIColor
-    
+
     public override var frame: CGRect {
         didSet {
             resizeSubviews()
@@ -489,7 +487,7 @@ public class LiquidFloatingCell : LiquittableCircle {
         super.init(center: center, radius: radius, color: color)
         setupView(view)
     }
-    
+
     public init(icon: UIImage) {
         self.originalColor = UIColor.clearColor()
         super.init()
@@ -499,31 +497,30 @@ public class LiquidFloatingCell : LiquittableCircle {
     required public init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     func setup(image: UIImage, tintColor: UIColor = UIColor.whiteColor()) {
-        imageView.image = image.imageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate)
+        imageView.image = image
         imageView.tintColor = tintColor
         setupView(imageView)
     }
-    
+
     public func setupView(view: UIView) {
         userInteractionEnabled = false
         addSubview(view)
         resizeSubviews()
     }
-    
+
     private func resizeSubviews() {
-        let size = CGSize(width: frame.width * 0.5, height: frame.height * 0.5)
-        imageView.frame = CGRect(x: frame.width - frame.width * internalRatio, y: frame.height - frame.height * internalRatio, width: size.width, height: size.height)
+        imageView.frame = CGRect(x: 0, y: 0, width: frame.width, height: frame.height)
     }
-    
+
     func update(key: CGFloat, open: Bool) {
         for subview in self.subviews {
             let ratio = max(2 * (key * key - 0.5), 0)
             subview.alpha = open ? ratio : -ratio
         }
     }
-    
+
     public override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
         if responsible {
             originalColor = color
@@ -531,14 +528,14 @@ public class LiquidFloatingCell : LiquittableCircle {
             setNeedsDisplay()
         }
     }
-    
+
     public override func touchesCancelled(touches: Set<UITouch>?, withEvent event: UIEvent?) {
         if responsible {
             color = originalColor
             setNeedsDisplay()
         }
     }
-    
+
     override public func touchesEnded(touches: Set<UITouch>, withEvent event: UIEvent?) {
         color = originalColor
         actionButton?.didTappedCell(self)
